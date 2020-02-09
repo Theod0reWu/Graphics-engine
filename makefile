@@ -1,2 +1,2 @@
 all: graphics.py
-  python graphics.py
+	python graphics.py
