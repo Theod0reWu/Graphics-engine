@@ -53,6 +53,7 @@ class Screen:
             for w in range(self.width):
                 funct(w,h,self.pixels[w][h])
     def plot(self,w, h, color, r = 0, g = 0, b = 0):
+        #print(h,w)
         self.pixels[h][w].setColor(r,g,b,color)
     def _Q1(self,x1,y1,x2,y2,color):
         a = y2 - y1
@@ -77,31 +78,82 @@ class Screen:
             y1 += 1
             d += 2*b
     def _Q3(self,x1,y1,x2,y2,color):
+        #print("Q3")
         a = y2 - y1
         b = -(x2-x1)
-        d = a + 2*b
-        while x1 < x2:
+        d = a - 2*b
+        #print(a,b,d)
+        while y1 > y2:
             self.plot(x1,y1,color)
-            if d < 0:
+            if d > 0:
                 x1+=1
                 d+=2*a
-            y1 += 1
-            d += 2*b
+            y1 -= 1
+            d -= 2*b
+    def _Q4(self,x1,y1,x2,y2,color):
+        #print("q4")
+        a = y2 - y1
+        b = -(x2-x1)
+        d = 2*a - b
+        while x1 < x2:
+            #print("({},{})".format(x1,y1))
+            #print(d)
+            self.plot(x1,y1,color)
+            if d < 0:
+                y1 -= 1
+                d -= 2*b
+            x1+=1
+            d+=2*a
     def line(self,x1,y1,x2,y2,color):
+        c = [[x1,y1], [x2,y2]]
+        c.sort()
+        
+        x1,x2 = c[0][0],c[1][0]
+        y1,y2 = c[0][1],c[1][1]
+
+        #print("({},{}) ({},{})".format(x1,y1,x2,y2))
         m = 2
         if (x2 != x1):
             m = (y2-y1)/(x2-x1)
+        #print(m)
         if (m <= 1 and m > 0):
             self._Q1(x1,y1,x2,y2,color)
         elif(m > 1):
             self._Q2(x1,y1,x2,y2,color)
-        elif(m > -1):
+        elif(m < -1):
             self._Q3(x1,y1,x2,y2,color)
         else:
             self._Q4(x1,y1,x2,y2,color)
 image = Screen(500,500)
-image.line(0,0,500,50,[255,255,255])
-image.line(0,0,0,500,[255,255,255])
-#Pixel.DEFAULT = [255,255,255]
-#image.clear()
-image.toFile("test")
+c = [ 0, 255, 0 ]
+XRES = 500
+YRES = 500
+#octants 1 and 5
+image.line(0, 0, XRES-1, YRES-1,  c)
+image.line(0, 0, XRES-1, YRES / 2,  c) 
+image.line(XRES-1, YRES-1, 0, int(YRES / 2),  c)
+
+#octants 8 and 4
+c[2] = 255;
+image.line(0, YRES-1, XRES-1, 0,  c);  
+image.line(0, YRES-1, XRES-1, int(YRES/2),  c);
+image.line(XRES-1, 0, 0, int(int(YRES/2)),  c);
+
+#octants 2 and 6
+c[0] = 255;
+c[1] = 0;
+c[2] = 0;
+image.line(0, 0, int(XRES/2), YRES-1,  c);
+image.line(XRES-1, YRES-1, int(XRES/2), 0,  c);
+
+#octants 7 and 3
+c[2] = 255;
+image.line(0, YRES-1, int(XRES/2), 0,  c);
+image.line(XRES-1, 0, int(XRES/2), YRES-1,  c);
+
+#horizontal and vertical
+c[2] = 0;
+c[1] = 255;
+image.line(0, int(YRES/2), XRES-1, int(YRES/2), c);
+image.line(int(XRES/2), 0, int(XRES/2), YRES-1, c);
+image.toFile("pic")
