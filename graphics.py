@@ -24,9 +24,10 @@ class Screen:
         enter = "P6\n{} {}\n255\n".format(self.height, self.width)
         with open(file+".ppm", "wb") as f:
             f.write(enter.encode())
-            for i in self.pixels:
-                for p in i:
-                    f.write(bytes(p.color))
+            for h in range(self.height):
+                for w in range(self.width):
+                    c = self.pixels[h][w].color
+                    f.write(bytes(c))
     def toFileAscii(self,file):
         enter = "P3\n{} {}\n255\n".format(self.height, self.width)
         for i in self.pixels:
@@ -107,7 +108,7 @@ class Screen:
     def line(self,x1,y1,x2,y2,color):
         c = [[x1,y1], [x2,y2]]
         c.sort()
-        
+
         x1,x2 = c[0][0],c[1][0]
         y1,y2 = c[0][1],c[1][1]
 
@@ -130,12 +131,12 @@ XRES = 500
 YRES = 500
 #octants 1 and 5
 image.line(0, 0, XRES-1, YRES-1,  c)
-image.line(0, 0, XRES-1, YRES / 2,  c) 
+image.line(0, 0, XRES-1, YRES / 2,  c)
 image.line(XRES-1, YRES-1, 0, int(YRES / 2),  c)
 
 #octants 8 and 4
 c[2] = 255;
-image.line(0, YRES-1, XRES-1, 0,  c);  
+image.line(0, YRES-1, XRES-1, 0,  c);
 image.line(0, YRES-1, XRES-1, int(YRES/2),  c);
 image.line(XRES-1, 0, 0, int(int(YRES/2)),  c);
 
@@ -157,3 +158,4 @@ c[1] = 255;
 image.line(0, int(YRES/2), XRES-1, int(YRES/2), c);
 image.line(int(XRES/2), 0, int(XRES/2), YRES-1, c);
 image.toFile("pic")
+print("pic.ppm")
