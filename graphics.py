@@ -10,7 +10,7 @@ class Pixel:
             if [r,g,b][h] != -1:
                 self.color[h] = [r,g,b][h]
     def getColor(self):
-        return "{} {} {}".format(self.color[0], self.color[1], self.color[2])
+        return "{} {} {} ".format(self.color[0], self.color[1], self.color[2])
 class Screen:
     def __init__(self, h, w):
         self.pixels = [[Pixel() for i in range(w)] for i in range(h)]
@@ -21,13 +21,14 @@ class Screen:
             for w in h:
                 w.color = Pixel.DEFAULT[:]
     def toFile(self,file):
-        enter = "P6\n{} {}\n255\n".format(self.height, self.width)
+        enter = "P3\n{} {}\n255\n".format(self.height, self.width)
         with open(file+".ppm", "wb") as f:
             f.write(enter.encode())
             for h in range(self.height):
                 for w in range(self.width):
-                    c = self.pixels[h][w].color
-                    f.write(bytes(c))
+                    c = self.pixels[h][w].getColor()
+                    #print (c)
+                    f.write(c.encode())
     def toFileAscii(self,file):
         enter = "P3\n{} {}\n255\n".format(self.height, self.width)
         for i in self.pixels:
