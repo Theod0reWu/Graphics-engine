@@ -17,7 +17,7 @@ class Screen:
                     c = self.pixels[h][w]
                     f.write(bytes(c))
     def toFileAscii(self,file):
-        enter = "P6\n{} {}\n255\n".format(self.height, self.width)
+        enter = "P3\n{} {}\n255\n".format(self.height, self.width)
         for i in self.pixels:
             row = ""
             for p in i:
@@ -113,40 +113,31 @@ class Screen:
             self._Q3(x1,y1,x2,y2,color)
         else:
             self._Q4(x1,y1,x2,y2,color)
+class Matrix:
+    def __init__(self, points = 4):
+        self.data[[0,0,0,1] for i in range(points)]
+        self.id = False
+    def print(self):
+        one,two,three = "","",""
+        for i in self.data:
+            one+=str(i[0])
+            two+=str(i[1])
+            three+=str(i[2])
+        print(one+"\n"+two+"\n"+three)
+    def ident(self):#convert to an identity matrix
+        self.data = [[0,0,0,1],[0,0,1,0],[0,1,0,0],[1,0,0,0]][::-1]
+        self.id = True
+    def mult(self, m): #m is [4x4]
+        new = [0,0,0,0]
+        for p in range(self.data):
+            for i in range(4):
+                f = m[i]
+                new[i] = f[0]*p[i] + f[1]*p[i] + f[2]*p[i] + f[3]*p[i]
+            self.data[p] = new
+        
+    
+            
 image = Screen(500,500)
-c = [ 0, 255, 0 ]
-XRES = 500
-YRES = 500
-#octants 1 and 5
-image.line(0, 0, XRES-1, YRES-1,  c)
-image.line(0, 0, XRES-1, YRES / 2,  c)
-image.line(XRES-1, YRES-1, 0, int(YRES / 2),  c)
 
-#octants 8 and 4
-c[2] = 255;
-image.line(0, YRES-1, XRES-1, 0,  c);
-image.line(0, YRES-1, XRES-1, int(YRES/2),  c);
-image.line(XRES-1, 0, 0, int(int(YRES/2)),  c);
-
-#octants 2 and 6
-c[0] = 255;
-c[1] = 0;
-c[2] = 0;
-image.line(0, 0, int(XRES/2), YRES-1,  c);
-image.line(XRES-1, YRES-1, int(XRES/2), 0,  c);
-
-#octants 7 and 3
-c[2] = 255;
-image.line(0, YRES-1, int(XRES/2), 0,  c);
-image.line(XRES-1, 0, int(XRES/2), YRES-1,  c);
-
-#horizontal and vertical
-c[2] = 0;
-c[1] = 255;
-image.line(0, int(YRES/2), XRES-1, int(YRES/2), c);
-image.line(int(XRES/2), 0, int(XRES/2), YRES-1, c);
-
-#save_ppm(image, "pic.ppm")
-image.plot(250,250,[255,255,255])
 image.toFile("pic")
 print("pic.ppm")
