@@ -21,14 +21,13 @@ class Screen:
             for w in h:
                 w.color = Pixel.DEFAULT[:]
     def toFile(self,file):
-        enter = "P3\n{} {}\n255\n".format(self.height, self.width)
+        enter = "P6\n{} {}\n255\n".format(self.height, self.width)
         with open(file+".ppm", "wb") as f:
             f.write(enter.encode())
             for h in range(self.height):
                 for w in range(self.width):
-                    c = self.pixels[h][w].getColor()
-                    #print (c)
-                    f.write(c.encode())
+                    c = self.pixels[h][w].color
+                    f.write(bytes(c))
     def toFileAscii(self,file):
         enter = "P3\n{} {}\n255\n".format(self.height, self.width)
         for i in self.pixels:
