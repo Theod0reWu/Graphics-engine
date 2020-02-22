@@ -115,7 +115,8 @@ class Screen:
             self._Q4(x1,y1,x2,y2,color)
 class Matrix:
     def __init__(self, points = 4):
-        self.data[[0,0,0,1] for i in range(points)]
+        c = [0,0,0,1]
+        self.data = [c[:] for i in range(points)]
         self.id = False
     def print(self):
         one,two,three = "","",""
