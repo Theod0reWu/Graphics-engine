@@ -119,26 +119,48 @@ class Matrix:
         self.data = [c[:] for i in range(points)]
         self.id = False
     def print(self):
-        one,two,three = "","",""
+        one,two,three, four = "","","", ""
         for i in self.data:
-            one+=str(i[0])
-            two+=str(i[1])
-            three+=str(i[2])
-        print(one+"\n"+two+"\n"+three)
+            one+=str(i[0]) + " "
+            two+=str(i[1]) + " "
+            three+=str(i[2]) + " "
+            four+=str(i[3]) + " "
+        print(one+"\n"+two+"\n"+three + "\n"+four)
     def ident(self):#convert to an identity matrix
         self.data = [[0,0,0,1],[0,0,1,0],[0,1,0,0],[1,0,0,0]][::-1]
         self.id = True
     def mult(self, m): #m is [4x4]
-        new = [0,0,0,0]
-        for p in range(self.data):
+        for p in range(len(self.data)):
+            new = [0,0,0,0]
+            ori = self.data[p]
             for i in range(4):
-                f = m[i]
-                new[i] = f[0]*p[i] + f[1]*p[i] + f[2]*p[i] + f[3]*p[i]
+                f = m.data[i]
+                new[i] = f[0]*ori[i] + f[1]*ori[i] + f[2]*ori[i] + f[3]*ori[i]
             self.data[p] = new
         
-    
-            
+print("making an identity matrix")
+ident = Matrix()
+ident.ident()
+ident.print()
+print("making a blank matrix with 10 columns")
+lines = Matrix(10)
+lines.print() 
 image = Screen(500,500)
+print("filling the matrix with random stuff")
+import random
+for i in range(3):
+    for w in range(10):
+        lines.data[w][i] = random.randint(0,9)
+lines.print()
+print("multiplying by identity matrix")
+lines.mult(ident)
+lines.print()
+print("changing identity matrix")
+ident.data[0][0] = 2
+ident.print()
+print("multiplying again")
+lines.mult(ident)
+lines.print()
 
 image.toFile("pic")
 print("pic.ppm")
