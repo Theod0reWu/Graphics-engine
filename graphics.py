@@ -129,7 +129,31 @@ class Matrix:
     def ident(self):#convert to an identity matrix
         self.data = [[0,0,0,1],[0,0,1,0],[0,1,0,0],[1,0,0,0]][::-1]
         self.id = True
-    def mult(self, m): #m is [4x4]
+    def trns(self, a = 0, b = 0, c = 0):
+        self.indent()
+        self.data[0][3] = a
+        self.data[1][3] = b
+        self.data[2][3] = c
+    def scale(self, a = 1, b = 1, c = 1):
+        self.indent()
+        self.data[0][0] = a
+        self.data[1][1] = b
+        self.data[2][2] = c
+    def rotate(self, axis, deg):
+        self.indent()
+        rad = radians(deg)
+        m = self.data
+        if axis.equals("x"):
+            None
+        elif axis.equals("y"):
+            None
+        elif axis.equals("z"):
+            m[0][0] = cos(rad)
+            m[0][1] = -sin(rad)
+        else:
+            print ("wrong input given to rotate: invalid axis")
+            raise ValueError
+    def mult(self, m): #m is [4x4] original = m*orginal
         for p in range(len(self.data)):
             new = [0,0,0,0]
             ori = self.data[p]
@@ -138,29 +162,4 @@ class Matrix:
                 new[i] = f[0]*ori[i] + f[1]*ori[i] + f[2]*ori[i] + f[3]*ori[i]
             self.data[p] = new
         
-print("making an identity matrix")
-ident = Matrix()
-ident.ident()
-ident.print()
-print("making a blank matrix with 10 columns")
-lines = Matrix(10)
-lines.print() 
-image = Screen(500,500)
-print("filling the matrix with random stuff")
-import random
-for i in range(3):
-    for w in range(10):
-        lines.data[w][i] = random.randint(0,9)
-lines.print()
-print("multiplying by identity matrix")
-lines.mult(ident)
-lines.print()
-print("changing identity matrix")
-ident.data[0][0] = 2
-ident.print()
-print("multiplying again")
-lines.mult(ident)
-lines.print()
 
-image.toFile("pic")
-print("pic.ppm")
