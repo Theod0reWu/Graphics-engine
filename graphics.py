@@ -43,7 +43,10 @@ class Screen:
                 funct(w,h,self.pixels[w][h])
     def plot(self,w, h,color):
         #print(h,w)
-        self.pixels[h][w] = color[:]
+        try:
+            self.pixels[int(h)][int(w)] = color[:]
+        except IndexError:
+            print("ERROR:",h,w)
     def _Q1(self,x1,y1,x2,y2,color):
         a = y2 - y1
         b = -(x2-x1)
@@ -113,6 +116,8 @@ class Screen:
             self._Q3(x1,y1,x2,y2,color)
         else:
             self._Q4(x1,y1,x2,y2,color)
+
+from math import radians, cos, sin
 class Matrix:
     def __init__(self, points = 0):
         c = [0,0,0,1]
@@ -143,17 +148,17 @@ class Matrix:
         self.ident()
         rad = radians(deg)
         m = self.data
-        if axis.equals("x"):
+        if axis == ("x"):
             m[1][1] = cos(rad)
             m[1][2] = -sin(rad)
             m[2][1] = sin(rad)
             m[2][2] = cos(rad)
-        elif axis.equals("y"):
+        elif axis==("y"):
             m[2][2] = cos(rad)
             m[2][0] = -sin(rad)
             m[0][2] = sin(rad)
             m[0][0] = cos(rad)
-        elif axis.equals("z"):
+        elif axis==("z"):
             m[0][0] = cos(rad)
             m[0][1] = -sin(rad)
             m[1][0] = sin(rad)
@@ -183,11 +188,24 @@ lines.addLine(0,0,0,250,0,0)
 lines.addLine(0,0,0,0,250,0)
 lines.addLine(0,250,0,250,250,0)
 lines.addLine(250,0,0,250,250,0)
+lines.addLine(0,0,0,0,0,-250)
+lines.addLine(0,0,-250,250,0,-250)
+lines.addLine(250,0,-250,250,0,0)
+lines.addLine(0,0,-250,0,250,-250)
+lines.addLine(0,250,-250,0,250,0)
+lines.addLine(250,250,0,250,250,-250)
 move = Matrix()
 move.trns(125,125,0)
-lines.print()
-move.print()
+scale = Matrix()
+scale.scale(.1,.1,1)
+r=Matrix()
+r.rotate("x",-30)
+s = Matrix()
+s.rotate("y",-30)
 
+#lines.mult(scale)
+lines.mult(r)
+lines.mult(s)
 lines.mult(move)
 lines.print()
 #lines.addLine(0,0,0,0,0,0)
