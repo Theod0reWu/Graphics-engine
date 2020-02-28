@@ -1,16 +1,21 @@
-class Screen:
+from matrix import *
+class screen:
     DEFAULT = [0,0,0]
     def __init__(self, h, w):
-        self.pixels = [[Screen.DEFAULT[:] for i in range(w)] for i in range(h)]
+        self.pixels = [[screen.DEFAULT[:] for i in range(w)] for i in range(h)]
         self.height = h
         self.width = w
+        #master matrices
+        self.tfrm = matrix()
+        self.tfrm.ident()
+        self.edge = matrix()
     def clear(self):
         for h in self.height:
             for w in self.width:
                 self.pixels[h][w] = Screen.DEFAULT[:]
     def toFile(self,file):
         enter = "P6\n{} {}\n255\n".format(self.height, self.width)
-        with open(file+".ppm", "wb") as f:
+        with open(file, "wb") as f:
             f.write(enter.encode())
             for h in range(self.height):
                 for w in range(self.width):
@@ -117,3 +122,36 @@ class Screen:
         else:
             self._Q4(x1,y1,x2,y2,color)
 
+    def toScreen(self):
+        l = 0
+        while l < len(self.edge.data):
+            self.line(self.edge.data[l][0],self.edge.data[l][1], self.edge.data[l+1][0], self.edge.data[l+1][1],[255,255,255])
+            l+=2
+    def updateTfrm(self):
+        self.edge.mult(self.tfrm)
+    def parse(self, args): #args are seperated my \n
+        l = args.lower().split("\n")
+        a = 0
+        while a < len(l):
+            if l[a] == "line":
+                data = [int(i) for i in l[a+1].split(" ")]
+                self.edge.addLine(data[0],data[1],data[2],data[3],data[4],data[5])
+            elif l[a] == "ident":
+                self.tfrm.ident()
+            elif l[a] == "scale":
+                data = [int(i) for i in l[a+1].split(" ")]
+                self.tfrm.mscale(data[0],data[1],data[2])
+            elif l[a] == "move":
+                data = [int(i) for i in l[a+1].split(" ")]
+                self.tfrm.mtrns(data[0],data[1],data[2])
+            elif l[a] == "rotate":
+                data = [int(i) for i in l[a+1].split(" ")]
+                self.tfrm.mrotate(data[0],data[1])
+            elif l[a] == "apply":
+                self.clear()
+                self.toScreen()
+            elif l[a] == "display":
+                None
+            elif l[a] == "save":
+                data = [int(i) for i in l[a+1].split(" ")]
+                self.toFile(data[0])

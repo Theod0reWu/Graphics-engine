@@ -1,5 +1,5 @@
 from math import radians, cos, sin
-class Matrix:
+class matrix:
     def __init__(self, points = 0):
         c = [0,0,0,1]
         self.data = [c[:] for i in range(points)]
@@ -63,3 +63,17 @@ class Matrix:
         while l < len(self.data):
             screen.line(self.data[l][0],self.data[l][1], self.data[l+1][0], self.data[l+1][1],[255,255,255])
             l+=2
+    #auto-mult, only for the master trfm matrix
+    def mtrns(self, a = 0, b = 0, c = 0):
+        e = matrix()
+        e.trns(a,b,c)
+        self.mult(e)
+    def mscale(self, a = 1, b = 1, c = 1):
+        e = matrix()
+        e.scale(a,b,c)
+        self.mult(e)
+    def mrotate(self, axis, deg):
+        e = matrix()
+        e.rotate(axis,deg)
+        self.mult(e)
+        
