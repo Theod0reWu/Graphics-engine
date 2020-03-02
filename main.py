@@ -27,5 +27,6 @@ pic.updateTfrm()
 # pic.edge.print()
 pic.toScreen()
 pic.toFile("pic.ppm")
+print("my own cube")
 print("pic.ppm")
 
