@@ -1,4 +1,6 @@
 from matrix import *
+from subprocess import Popen, PIPE
+from os import remove
 class screen:
     DEFAULT = [0,0,0]
     def __init__(self, h, w):
@@ -10,9 +12,11 @@ class screen:
         self.tfrm.ident()
         self.edge = matrix()
     def clear(self):
-        for h in self.height:
-            for w in self.width:
-                self.pixels[h][w] = Screen.DEFAULT[:]
+        for h in range(self.height):
+            for w in range(self.width):
+                self.pixels[h][w] = screen.DEFAULT[:]
+        self.edge.data = []
+        self.tfrm.ident()
     def toFile(self,file):
         enter = "P6\n{} {}\n255\n".format(self.height, self.width)
         with open(file, "wb") as f:
@@ -26,9 +30,9 @@ class screen:
         for i in self.pixels:
             row = ""
             for p in i:
-                row += p.getColor() + " "
+                row += str(p[0]) + " " + str(p[1]) + " " + str(p[2]) + " " #the color of the pixel
             enter += row + "\n"
-        with open(file+".ppm", "w+") as f:
+        with open(file, "w+") as f:
             f.write(enter)
     def printIt(self):
         enter = "P3\n{} {}\n255\n".format(self.height, self.width)
@@ -133,11 +137,13 @@ class screen:
         l = args.lower().split("\n")
         a = 0
         while a < len(l):
+            print(l[a])
             if l[a] == "line":
                 data = [int(i) for i in l[a+1].split(" ")]
                 self.edge.addLine(data[0],data[1],data[2],data[3],data[4],data[5])
             elif l[a] == "ident":
                 self.tfrm.ident()
+                a-=1
             elif l[a] == "scale":
                 data = [int(i) for i in l[a+1].split(" ")]
                 self.tfrm.mscale(data[0],data[1],data[2])
@@ -145,13 +151,34 @@ class screen:
                 data = [int(i) for i in l[a+1].split(" ")]
                 self.tfrm.mtrns(data[0],data[1],data[2])
             elif l[a] == "rotate":
-                data = [int(i) for i in l[a+1].split(" ")]
+                data = l[a+1].split(" ")
+                data[1] = int(data[1])
                 self.tfrm.mrotate(data[0],data[1])
             elif l[a] == "apply":
-                self.clear()
-                self.toScreen()
+                self.updateTfrm()
+                a-=1
             elif l[a] == "display":
-                None
+                #display(self)
+                a-=1
             elif l[a] == "save":
-                data = [int(i) for i in l[a+1].split(" ")]
-                self.toFile(data[0])
+                self.toScreen()
+                self.toFileAscii(l[a+1])
+            else:
+                a-=1
+            a+=2
+    def read(self, file):
+        with open(file, "r") as f:
+            self.parse(f.read())
+    # def display(self):
+    #     ppm_name = "pic.ppm"
+    #     self.toFileAscii(ppm_name)
+    #     p = Popen( ['display', ppm_name], stdin=PIPE, stdout = PIPE )
+    #     p.communicate()
+    #     remove(ppm_name)
+def display( screen ):
+    ppm_name = 'pic.ppm'
+    screen.toFileAscii(ppm_name)
+    p = Popen( ['display', ppm_name], stdin=PIPE, stdout = PIPE )
+    p.communicate()
+    remove(ppm_name)
+
