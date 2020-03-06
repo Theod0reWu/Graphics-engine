@@ -137,7 +137,7 @@ class screen:
         l = args.lower().split("\n")
         a = 0
         while a < len(l):
-            print(l[a])
+            #print(l[a])
             if l[a] == "line":
                 data = [int(i) for i in l[a+1].split(" ")]
                 self.edge.addLine(data[0],data[1],data[2],data[3],data[4],data[5])

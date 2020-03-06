@@ -4,7 +4,7 @@ class matrix:
         c = [0,0,0,1]
         self.data = [c[:] for i in range(points)]
         self.id = False
-    def print(self):
+    def printOut(self):
         one,two,three, four = "","","", ""
         for i in self.data:
             one+=str(i[0]) + " "
