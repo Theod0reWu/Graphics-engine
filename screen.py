@@ -1,8 +1,10 @@
 from matrix import *
 from subprocess import Popen, PIPE
 from os import remove
+from math import cos, sin, pi
 class screen:
     DEFAULT = [0,0,0]
+    DRAW = [255,255,255]
     def __init__(self, h, w):
         self.pixels = [[screen.DEFAULT[:] for i in range(w)] for i in range(h)]
         self.height = h
@@ -125,11 +127,23 @@ class screen:
             self._Q3(x1,y1,x2,y2,color)
         else:
             self._Q4(x1,y1,x2,y2,color)
-
+    def circle(self,x,y,z,r,steps):
+        step = 1/steps
+        t = 0
+        p1 = [x,y,z]
+        p2 = [x + r * cos(2*pi * t), y + r * sin(2*pi * t),z]
+        for i in range(steps+1):
+            p1 = p2[:]
+            p2 = [x + r * cos(2*pi * t), y + r * sin(2*pi * t),z]
+            t+=step
+            self.edge.addLine(p1[0],p1[1],p1[2],p2[0],p2[1],p2[2])
+    def bezier(self,x0,y0,x1,y1,influence,steps):
+        step = 1/steps
+        t = 0
     def toScreen(self):
         l = 0
         while l < len(self.edge.data):
-            self.line(self.edge.data[l][0],self.edge.data[l][1], self.edge.data[l+1][0], self.edge.data[l+1][1],[255,255,255])
+            self.line(self.edge.data[l][0],self.edge.data[l][1], self.edge.data[l+1][0], self.edge.data[l+1][1],screen.DRAW[:])
             l+=2
     def updateTfrm(self):
         self.edge.mult(self.tfrm)
@@ -141,6 +155,9 @@ class screen:
             if l[a] == "line":
                 data = [int(i) for i in l[a+1].split(" ")]
                 self.edge.addLine(data[0],data[1],data[2],data[3],data[4],data[5])
+            elif l[a] == "circle":
+                data = [int(i) for i in l[a+1].split(" ")]
+                self.circle(data[0],data[1],data[2],data[3],data[4])
             elif l[a] == "ident":
                 self.tfrm.ident()
                 a-=1
