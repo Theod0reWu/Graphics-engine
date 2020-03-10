@@ -155,7 +155,7 @@ class screen:
                 p2 = [0,0]
                 for n in range(2):
                     for p in range(len(influence)):
-                        p2[n] += self.__nCr(pwr,p) * (1-t)**(pwr-p) * t**(p) * influence[p][n]
+                        p2[n] += self.__nCr(pwr,p) * (1-t)**(pwr-p+1) * t**(p) * influence[p][n]
                         #print(self.__nCr(pwr,p))
                 self.edge.addLine(p1[0],p1[1],0,p2[0],p2[1],0)
                 t+=step
