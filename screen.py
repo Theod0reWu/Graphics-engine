@@ -29,7 +29,7 @@ class screen:
                     f.write(bytes(c))
     def toFileAscii(self,file):
         enter = "P3\n{} {}\n255\n".format(self.height, self.width)
-        for i in self.pixels:
+        for i in self.pixels[::-1]:
             row = ""
             for p in i:
                 row += str(p[0]) + " " + str(p[1]) + " " + str(p[2]) + " " #the color of the pixel
@@ -145,20 +145,43 @@ class screen:
         p2 = [x0,y0]
         influence.append([x1,y1])
         influence.insert(0,[x0,y0])
+        pwr = len(influence) - 1
         if (len(influence) == 1):
             None
+        #elif pwr == 3:
+        #    ax = (-x0 + 3
         else:
-            pwr = len(influence) - 1
-            #print(pwr)
             for i in range(steps+1):
+                #print(t)
                 p1 = p2[:]
                 p2 = [0,0]
                 for n in range(2):
+                    #print("***")
                     for p in range(len(influence)):
-                        p2[n] += self.__nCr(pwr,p) * (1-t)**(pwr-p+1) * t**(p) * influence[p][n]
-                        #print(self.__nCr(pwr,p))
+                        p2[n] += self.__nCr(pwr,p) * ((1-t)**(pwr-p)) * ((t)**(p)) * influence[p][n]
+                        #print(self.__nCr(pwr,p),pwr-p, p,n )
                 self.edge.addLine(p1[0],p1[1],0,p2[0],p2[1],0)
                 t+=step
+    def hermite(self, x0, y0, x1, y1, rx0, ry0, rx1, ry1, steps):
+        step = 1/steps
+        t = 0
+        
+        ax = 2*x0 - 2*x1 + rx0 + rx1
+        ay = 2*y0 - 2*y1 + ry0 + ry1
+        bx = -3*x0 + 3*x1 - 2*rx0 - rx1
+        by = -3*y0 + 3*y1 - 2*ry0 - ry1
+        cx = rx0
+        cy = ry0
+        dx = x0
+        dy = y0
+        p1 = []
+        p2 = [x0,y0]
+        for i in range(steps+1):
+            #print(t)
+            p1 = p2[:]
+            p2 = [ax*t**3 + bx*t**2 + cx*t + dx,ay*t**3 + by*t**2 + cy*t + dy]
+            self.edge.addLine(p1[0],p1[1],0,p2[0],p2[1],0)
+            t+=step
     def toScreen(self):
         l = 0
         while l < len(self.edge.data):
@@ -177,10 +200,12 @@ class screen:
             elif l[a] == "circle":
                 data = [int(i) for i in l[a+1].split(" ")]
                 self.circle(data[0],data[1],data[2],data[3],30)
-            elif l[a] == "bezier":
+            elif l[a] == "bezier": # only accepts 4 coords
                 data = [int(i) for i in l[a+1].split(" ")]
-                self.bezier(data[0],data[1],data[2],data[3],[[data[4],data[5]],[data[6],data[7]]],20)
-                        
+                self.bezier(data[0],data[1],data[6],data[7],[[data[2],data[3]],[data[4],data[5]]],20)
+            elif l[a] == "hermite":
+                data = [int(i) for i in l[a+1].split(" ")]
+                self.hermite(data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],20)
             elif l[a] == "ident":
                 self.tfrm.ident()
                 a-=1
