@@ -1,7 +1,7 @@
 from matrix import *
 from subprocess import Popen, PIPE
 from os import remove
-from math import cos, sin, pi
+from math import cos, sin, pi, factorial
 class screen:
     DEFAULT = [0,0,0]
     DRAW = [255,255,255]
@@ -138,8 +138,27 @@ class screen:
             t+=step
             self.edge.addLine(p1[0],p1[1],p1[2],p2[0],p2[1],p2[2])
     def bezier(self,x0,y0,x1,y1,influence,steps):
+        #influence is a list of points in the form [x,y]
         step = 1/steps
         t = 0
+        p1 = []
+        p2 = [x0,y0]
+        influence.append([x1,y1])
+        influence.insert(0,[x0,y0])
+        if (len(influence) == 1):
+            None
+        else:
+            pwr = len(influence) - 1
+            #print(pwr)
+            for i in range(steps+1):
+                p1 = p2[:]
+                p2 = [0,0]
+                for n in range(2):
+                    for p in range(len(influence)):
+                        p2[n] += self.__nCr(pwr,p) * (1-t)**(pwr-p) * t**(p) * influence[p][n]
+                        #print(self.__nCr(pwr,p))
+                self.edge.addLine(p1[0],p1[1],0,p2[0],p2[1],0)
+                t+=step
     def toScreen(self):
         l = 0
         while l < len(self.edge.data):
@@ -157,7 +176,11 @@ class screen:
                 self.edge.addLine(data[0],data[1],data[2],data[3],data[4],data[5])
             elif l[a] == "circle":
                 data = [int(i) for i in l[a+1].split(" ")]
-                self.circle(data[0],data[1],data[2],data[3],data[4])
+                self.circle(data[0],data[1],data[2],data[3],30)
+            elif l[a] == "bezier":
+                data = [int(i) for i in l[a+1].split(" ")]
+                self.bezier(data[0],data[1],data[2],data[3],[[data[4],data[5]],[data[6],data[7]]],20)
+                        
             elif l[a] == "ident":
                 self.tfrm.ident()
                 a-=1
@@ -192,6 +215,8 @@ class screen:
     #     p = Popen( ['display', ppm_name], stdin=PIPE, stdout = PIPE )
     #     p.communicate()
     #     remove(ppm_name)
+    def __nCr(self, n, r):
+        return factorial(n) / (factorial(r) * factorial(n-r))
 def display( screen ):
     ppm_name = 'pic.ppm'
     screen.toFileAscii(ppm_name)
