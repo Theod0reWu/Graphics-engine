@@ -31,7 +31,7 @@ class matrix:
         m = self.data
         if axis == ("x"):
             m[2][2] = cos(rad)
-            m[2][1] = -sin(rad)
+            m[2][1] = -1*sin(rad)
             m[1][2] = sin(rad)
             m[1][1] = cos(rad)
         elif axis==("y"):

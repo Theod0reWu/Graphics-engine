@@ -182,6 +182,19 @@ class screen:
             p2 = [ax*t**3 + bx*t**2 + cx*t + dx,ay*t**3 + by*t**2 + cy*t + dy]
             self.edge.addLine(p1[0],p1[1],0,p2[0],p2[1],0)
             t+=step
+    def box(self,x,y,z,length, height, depth):
+        self.edge.addLine(x,y,z,x+length,y,z)
+        self.edge.addLine(x,y,z,x,y,z+depth)
+        self.edge.addLine(x,y,z,x,y-height,z)
+        self.edge.addLine(x+length,y,z,x+length,y-height,z)
+        self.edge.addLine(x+length,y,z,x+length,y,z+depth)
+        self.edge.addLine(x,y-height,z,x+length,y-height,z)
+        self.edge.addLine(x,y,z+depth,x+length,y,z+depth)
+        self.edge.addLine(x,y-height,z+depth,x,y,z+depth)
+        self.edge.addLine(x,y-height,z+depth,x+length,y-height,z+depth)
+        self.edge.addLine(x+length,y-height,z+depth,x+length,y,z+depth)
+        self.edge.addLine(x,y-height,z,x,y-height,z+depth)
+        self.edge.addLine(x+length,y-height,z,x+length,y-height,z+depth)
     def toScreen(self):
         l = 0
         while l < len(self.edge.data):
@@ -206,6 +219,9 @@ class screen:
             elif l[a] == "hermite":
                 data = [int(i) for i in l[a+1].split(" ")]
                 self.hermite(data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],20)
+            elif l[a] == "box":
+                data = [int(i) for i in l[a+1].split(" ")]
+                self.box(data[0],data[1],data[2],data[3],data[4],data[5])
             elif l[a] == "ident":
                 self.tfrm.ident()
                 a-=1
