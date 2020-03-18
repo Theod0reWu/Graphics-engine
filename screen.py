@@ -127,7 +127,7 @@ class screen:
             self._Q3(x1,y1,x2,y2,color)
         else:
             self._Q4(x1,y1,x2,y2,color)
-    def circle(self,x,y,z,r,steps):
+    def circle(self,x,y,z,r,steps = 35):
         step = 1/steps
         t = 0
         p1 = [x,y,z]
@@ -184,17 +184,38 @@ class screen:
             t+=step
     def box(self,x,y,z,length, height, depth):
         self.edge.addLine(x,y,z,x+length,y,z)
-        self.edge.addLine(x,y,z,x,y,z+depth)
+        self.edge.addLine(x,y,z,x,y,z-depth)
         self.edge.addLine(x,y,z,x,y-height,z)
         self.edge.addLine(x+length,y,z,x+length,y-height,z)
-        self.edge.addLine(x+length,y,z,x+length,y,z+depth)
+        self.edge.addLine(x+length,y,z,x+length,y,z-depth)
         self.edge.addLine(x,y-height,z,x+length,y-height,z)
-        self.edge.addLine(x,y,z+depth,x+length,y,z+depth)
-        self.edge.addLine(x,y-height,z+depth,x,y,z+depth)
-        self.edge.addLine(x,y-height,z+depth,x+length,y-height,z+depth)
-        self.edge.addLine(x+length,y-height,z+depth,x+length,y,z+depth)
-        self.edge.addLine(x,y-height,z,x,y-height,z+depth)
-        self.edge.addLine(x+length,y-height,z,x+length,y-height,z+depth)
+        self.edge.addLine(x,y,z-depth,x+length,y,z-depth)
+        self.edge.addLine(x,y-height,z-depth,x,y,z-depth)
+        self.edge.addLine(x,y-height,z-depth,x+length,y-height,z-depth)
+        self.edge.addLine(x+length,y-height,z-depth,x+length,y,z-depth)
+        self.edge.addLine(x,y-height,z,x,y-height,z-depth)
+        self.edge.addLine(x+length,y-height,z,x+length,y-height,z-depth)
+    def sphere(self,x,y,z,radius,steps = 20):
+        step = 1/steps
+        r = radius
+        for phi in range(steps + 1):
+            p = phi * step * 2 * pi
+            for theta in range(steps + 1):
+                the = theta * step * pi
+                hx =  r*cos(the) + x
+                hy = r*sin(the)*cos(p) + y
+                hz = r*sin(the)*sin(p) + z
+                self.edge.addLine(hx,hy,hz+1,hx,hy,hz) 
+    def torus(self,x,y,z,r1,r2,steps = 20):
+        step = 1/steps
+        for phi in range(steps + 1):
+            p = phi * step * 2 * pi
+            for theta in range(steps + 1):
+                the = theta * step * 2 * pi
+                hx =  cos(p) * (r1*cos(the) + r2) + x
+                hy = r1*sin(the) + y
+                hz = -1 * sin(p) * (r1*cos(the) + r2) + z
+                self.edge.addLine(hx,hy,hz+1,hx,hy,hz) 
     def toScreen(self):
         l = 0
         while l < len(self.edge.data):
@@ -212,7 +233,7 @@ class screen:
                 self.edge.addLine(data[0],data[1],data[2],data[3],data[4],data[5])
             elif l[a] == "circle":
                 data = [int(i) for i in l[a+1].split(" ")]
-                self.circle(data[0],data[1],data[2],data[3],30)
+                self.circle(data[0],data[1],data[2],data[3])
             elif l[a] == "bezier": # only accepts 4 coords
                 data = [int(i) for i in l[a+1].split(" ")]
                 self.bezier(data[0],data[1],data[6],data[7],[[data[2],data[3]],[data[4],data[5]]],20)
@@ -220,8 +241,15 @@ class screen:
                 data = [int(i) for i in l[a+1].split(" ")]
                 self.hermite(data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],20)
             elif l[a] == "box":
+                #print("box")
                 data = [int(i) for i in l[a+1].split(" ")]
                 self.box(data[0],data[1],data[2],data[3],data[4],data[5])
+            elif l[a] == "sphere":
+                data = [int(i) for i in l[a+1].split(" ")]
+                self.sphere(data[0],data[1],data[2],data[3])
+            elif l[a] == "torus":
+                data = [int(i) for i in l[a+1].split(" ")]
+                self.torus(data[0],data[1],data[2],data[3],data[4])
             elif l[a] == "ident":
                 self.tfrm.ident()
                 a-=1
@@ -244,6 +272,10 @@ class screen:
             elif l[a] == "save":
                 self.toScreen()
                 self.toFileAscii(l[a+1])
+                a-=1
+            elif l[a] == "clear":
+                self.edge = matrix()
+                a-=1
             else:
                 a-=1
             a+=2
