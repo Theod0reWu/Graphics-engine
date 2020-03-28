@@ -1,7 +1,7 @@
 from matrix import *
 from subprocess import Popen, PIPE
 from os import remove
-from math import cos, sin, pi, factorial
+from math import cos, sin, atan2, pi, factorial
 class screen:
     DEFAULT = [0,0,0]
     DRAW = [255,255,255]
@@ -13,12 +13,15 @@ class screen:
         self.tfrm = matrix()
         self.tfrm.ident()
         self.edge = matrix()
+
+        self.poly = matrix()
     def clear(self):
         for h in range(self.height):
             for w in range(self.width):
                 self.pixels[h][w] = screen.DEFAULT[:]
         self.edge.data = []
         self.tfrm.ident()
+        self.poly.data = []
     def toFile(self,file):
         enter = "P6\n{} {}\n255\n".format(self.height, self.width)
         with open(file, "wb") as f:
@@ -195,7 +198,7 @@ class screen:
         self.edge.addLine(x+length,y-height,z-depth,x+length,y,z-depth)
         self.edge.addLine(x,y-height,z,x,y-height,z-depth)
         self.edge.addLine(x+length,y-height,z,x+length,y-height,z-depth)
-    def sphere(self,x,y,z,radius,steps = 20):
+    def sphere(self,x,y,z,radius,steps = 50):
         step = 1/steps
         r = radius
         for phi in range(steps + 1):
@@ -206,7 +209,7 @@ class screen:
                 hy = r*sin(the)*cos(p) + y
                 hz = r*sin(the)*sin(p) + z
                 self.edge.addLine(hx,hy,hz+1,hx,hy,hz) 
-    def torus(self,x,y,z,r1,r2,steps = 20):
+    def torus(self,x,y,z,r1,r2,steps = 50):
         step = 1/steps
         for phi in range(steps + 1):
             p = phi * step * 2 * pi
@@ -216,13 +219,39 @@ class screen:
                 hy = r1*sin(the) + y
                 hz = -1 * sin(p) * (r1*cos(the) + r2) + z
                 self.edge.addLine(hx,hy,hz+1,hx,hy,hz) 
-    def toScreen(self):
+    def add_poly(self, x1,y1,z1,x2,y2,z2,x3,y3,z3):
+        #sort counterclockwise
+        self.poly.addPoint(x1,y1,z1)
+        #print("2:",atan2((y2-y1),(x2-x1)),"3:", atan2((y3-y1),(x3-x1)))
+        fact2 = atan2((y2-y1),(x2-x1))
+        fact3 = atan2((y3-y1),(x3-x1))
+
+        fact2 = fact2  if fact2 >= 0 else (2*pi - fact2)
+        fact3 = fact3  if fact3 >= 0 else (2*pi - fact3)
+        #print("2:",fact2,"3:", fact3)
+        if fact2 < fact3:
+            self.poly.addPoint(x2,y2,z2)
+            self.poly.addPoint(x3,y3,z3)
+        else:
+            self.poly.addPoint(x3,y3,z3)
+            self.poly.addPoint(x2,y2,z2)
+    def draw_poly(self):
         l = 0
+        polys = self.poly.data
+        while l < len(polys):
+            self.line(polys[l][0],polys[l][1],polys[l+1][0],polys[l+1][1], screen.DRAW[:])
+            self.line(polys[l+2][0],polys[l+2][1],polys[l+1][0],polys[l+1][1], screen.DRAW[:])
+            self.line(polys[l][0],polys[l][1],polys[l+2][0],polys[l+2][1], screen.DRAW[:])
+            l+=3
+    def toScreen(self):
+        self.draw_poly()
+        l = 0 # lines
         while l < len(self.edge.data):
             self.line(self.edge.data[l][0],self.edge.data[l][1], self.edge.data[l+1][0], self.edge.data[l+1][1],screen.DRAW[:])
             l+=2
     def updateTfrm(self):
         self.edge.mult(self.tfrm)
+        self.poly.mult(self.tfrm)
     def parse(self, args): #args are seperated my \n
         l = args.lower().split("\n")
         a = 0

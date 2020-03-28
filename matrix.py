@@ -61,6 +61,8 @@ class matrix:
     def addLine(self,x1,y1,z1,x2,y2,z2):
         self.data.append([x1,y1,z1,1])
         self.data.append([x2,y2,z2,1])
+    def addPoint(self,x1,y1,z1):
+        self.data.append([x1,y1,z1,1])
     def toScreen(self, screen):
         l = 0
         while l < len(self.data):
