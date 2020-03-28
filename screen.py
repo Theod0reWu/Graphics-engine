@@ -185,31 +185,74 @@ class screen:
             p2 = [ax*t**3 + bx*t**2 + cx*t + dx,ay*t**3 + by*t**2 + cy*t + dy]
             self.edge.addLine(p1[0],p1[1],0,p2[0],p2[1],0)
             t+=step
-    def box(self,x,y,z,length, height, depth):
-        self.edge.addLine(x,y,z,x+length,y,z)
-        self.edge.addLine(x,y,z,x,y,z-depth)
-        self.edge.addLine(x,y,z,x,y-height,z)
-        self.edge.addLine(x+length,y,z,x+length,y-height,z)
-        self.edge.addLine(x+length,y,z,x+length,y,z-depth)
-        self.edge.addLine(x,y-height,z,x+length,y-height,z)
-        self.edge.addLine(x,y,z-depth,x+length,y,z-depth)
-        self.edge.addLine(x,y-height,z-depth,x,y,z-depth)
-        self.edge.addLine(x,y-height,z-depth,x+length,y-height,z-depth)
-        self.edge.addLine(x+length,y-height,z-depth,x+length,y,z-depth)
-        self.edge.addLine(x,y-height,z,x,y-height,z-depth)
-        self.edge.addLine(x+length,y-height,z,x+length,y-height,z-depth)
-    def sphere(self,x,y,z,radius,steps = 50):
+    def box(self,x,y,z,l, h, d): #length height depth
+        self.add_poly(x,y,z,x+l,y,z,x,y-h,z)
+        self.add_poly(x+l,y,z,x,y-h,z,x+l,y-h,z)
+
+        self.add_poly(x,y,z-d,x,y,z,x+l,y,z-d)
+        self.add_poly(x,y,z,x+l,y,z-d,x+l,y,z)
+
+        self.add_poly(x+l,y,z,x+l,y,z-d,x+l,y-h,z)
+        self.add_poly(x+l,y,z-d,x+l,y-h,z,x+l,y-h,z-d)
+
+        self.add_poly(x,y,z-d,x,y,z,x,y-h,z-d)
+        self.add_poly(x,y,z,x,y-h,z-d,x,y-h,z)
+
+        self.add_poly(x,y-h,z,x+l,y-h,z,x,y-h,z-d)
+        self.add_poly(x+l,y-h,z,x,y-h,z-d,x+l,y-h,z-d)
+
+        self.add_poly(x,y,z-d,x+l,y,z-d,x,y-h,z-d)
+        self.add_poly(x+l,y,z-d,x,y-h,z-d,x+l,y-h,z-d)
+    def sphere(self,x,y,z,radius,steps = 20):
+        points = self._spherePoints(x,y,z,radius,steps).data
+        ps = len(points)
+        for semi in range(steps):
+            for p in range(semi * (steps+1), (semi+1) * (steps+1)):
+                if p == semi * (steps+1):
+                    self.add_polyL(points[p],points[p+1],points[(p+steps+1)%ps])
+                elif p ==  (semi+1) * (steps+1) - 1:
+                    self.add_polyL(points[p],points[(p+steps+1)%ps],points[(p+steps)%ps])
+                else:
+                    self.add_polyL(points[p],points[p+1],points[(p+steps+1)%ps])
+                    self.add_polyL(points[p],points[(p+steps+1)%ps],points[(p+steps)%ps])
+        # while p < len(points):
+        #     while p < smc * steps:
+        #         if p-1 % ps == 0 or p == 0:
+        #             self.add_polyL(points[p],points[p+1],points[(p+steps+1)%ps])
+        #         elif p+1 % steps == 0:
+        #             self.add_polyL(points[p],points[(p+steps+1)%ps],points[(p+steps)%ps])
+        #         else:
+        #             self.add_polyL(points[p],points[p+1],points[(p+steps+1)%ps])
+        #             self.add_polyL(points[p],points[(p+steps+1)%ps],points[(p+steps)%ps])
+        #         p+=1
+        #     p+=1
+        #     smc += 1
+    def _spherePoints(self,x,y,z,radius,steps):
+        points = matrix()
+
         step = 1/steps
         r = radius
-        for phi in range(steps + 1):
+        for phi in range(steps):
             p = phi * step * 2 * pi
             for theta in range(steps + 1):
                 the = theta * step * pi
                 hx =  r*cos(the) + x
                 hy = r*sin(the)*cos(p) + y
                 hz = r*sin(the)*sin(p) + z
-                self.edge.addLine(hx,hy,hz+1,hx,hy,hz) 
-    def torus(self,x,y,z,r1,r2,steps = 50):
+                points.addPoint(hx,hy,hz) 
+        return points
+    def pointySphere(self,x,y,z,radius,steps):
+        step = 1/steps
+        r = radius
+        for phi in range(steps):
+            p = phi * step * 2 * pi
+            for theta in range(steps + 1):
+                the = theta * step * pi
+                hx =  r*cos(the) + x
+                hy = r*sin(the)*cos(p) + y
+                hz = r*sin(the)*sin(p) + z
+                self.edge.addLine(hx+1,hy+1,hz+1,hx,hy,hz) 
+    def pointyTorus(self,x,y,z,r1,r2,steps = 40):
         step = 1/steps
         for phi in range(steps + 1):
             p = phi * step * 2 * pi
@@ -218,7 +261,28 @@ class screen:
                 hx =  cos(p) * (r1*cos(the) + r2) + x
                 hy = r1*sin(the) + y
                 hz = -1 * sin(p) * (r1*cos(the) + r2) + z
-                self.edge.addLine(hx,hy,hz+1,hx,hy,hz) 
+                self.edge.addLine(hx+1,hy+1,hz+1,hx,hy,hz) 
+    def torus(self,x,y,z,r1,r2,steps = 20):
+        points =self.__torusPoints(x,y,z,r1,r2,steps).data
+        ps = len(points)
+        for semi in range(steps):
+            for p in range(semi * (steps+1), (semi+1) * (steps+1)):
+                self.add_polyL(points[p],points[p+1],points[(p+steps+1)%ps])
+                self.add_polyL(points[p],points[(p+steps+1)%ps],points[(p+steps)%ps])
+    def __torusPoints(self,x,y,z,r1,r2,steps):
+        points = matrix()
+        step = 1/steps
+        for phi in range(steps + 1):
+            p = phi * step * 2 * pi
+            for theta in range(steps + 1):
+                the = theta * step * 2 * pi
+                hx =  cos(p) * (r1*cos(the) + r2) + x
+                hy = r1*sin(the) + y
+                hz = -1 * sin(p) * (r1*cos(the) + r2) + z
+                points.addPoint(hx,hy,hz) 
+        return points
+    def add_polyL(self,p1,p2,p3):
+        self.add_poly(p1[0],p1[1],p1[2],p2[0],p2[1],p2[2],p3[0],p3[1],p3[2])
     def add_poly(self, x1,y1,z1,x2,y2,z2,x3,y3,z3):
         #sort counterclockwise
         self.poly.addPoint(x1,y1,z1)

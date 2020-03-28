@@ -1,42 +1,18 @@
-torus
-250 100 0 5 100
-torus
-250 110 0 5 90
-torus
-250 120 0 5 80
-torus
-250 130 0 5 60
-torus
-250 140 0 5 40
-torus
-250 150 0 5 20
-torus
-250 150 0 5 50
-torus
-250 160 0 5 45
-torus
-250 170 0 5 35
-torus
-250 180 0 5 30
-torus
-250 190 0 5 25
-torus
-250 200 0 5 20
-torus
-250 210 0 5 20
-torus
-250 220 0 5 20
-torus
-250 230 0 5 20
-sphere
-250 260 0 35
-box
-100 100 150 300 20 300
 ident
+sphere
+110 0 0 75
+sphere
+-110 0 0 75
+box
+-80 -120 0 75 75 75
+torus
+-30 -335 0 25 175
 rotate
-x 20
+x 30
 rotate
-y 20
+y -20
+move
+250 400 0
 apply
 save
 pic.ppm
