@@ -1,4 +1,5 @@
 from matrix import *
+from vector import *
 from subprocess import Popen, PIPE
 from os import remove
 from math import cos, sin, atan2, pi, factorial
@@ -59,6 +60,11 @@ class screen:
         #print(h,w)
         try:
             self.pixels[int(h)][int(w)] = color[:]
+        except IndexError:
+            print("ERROR:",h,w)
+    def plotL(self,l,color):
+        try:
+            self.pixels[int(l[0])][int(l[1])] = color[:]
         except IndexError:
             print("ERROR:",h,w)
     def _Q1(self,x1,y1,x2,y2,color):
@@ -186,28 +192,33 @@ class screen:
             self.edge.addLine(p1[0],p1[1],0,p2[0],p2[1],0)
             t+=step
     def box(self,x,y,z,l, h, d): #length height depth
-        self.add_poly(x,y,z,x+l,y,z,x,y-h,z)
-        self.add_poly(x+l,y,z,x,y-h,z,x+l,y-h,z)
+        x1 = x + l
+        y1 = y - h
+        z1 = z - d
+        
+        self.add_poly_direct(x,y,z,x,y1,z,x1,y,z)
+        self.add_poly_direct(x,y1,z,x1,y1,z,x1,y,z)
+        
+        self.add_poly_direct(x,y,z1,x1,y,z1,x,y1,z1)
+        self.add_poly_direct(x,y1,z1,x1,y,z1,x1,y1,z1)
+        
+        self.add_poly_direct(x,y,z1,x,y1,z1,x,y1,z)
+        self.add_poly_direct(x,y,z1,x,y1 ,z,x,y,z)
+        
+        self.add_poly_direct(x1,y,z,x1,y1,z,x1,y,z1)
+        self.add_poly_direct(x1,y,z1,x1,y1,z,x1,y1,z1)
+        
+        self.add_poly_direct(x,y,z1,x,y,z,x1,y,z1)
+        self.add_poly_direct(x,y,z,x1,y,z,x1,y,z1)
+  
+        self.add_poly_direct(x1,y1,z1,x1,y1,z,x,y1,z)
+        self.add_poly_direct(x,y1,z,x,y1,z1,x1,y1,z1)
 
-        self.add_poly(x,y,z-d,x,y,z,x+l,y,z-d)
-        self.add_poly(x,y,z,x+l,y,z-d,x+l,y,z)
-
-        self.add_poly(x+l,y,z,x+l,y,z-d,x+l,y-h,z)
-        self.add_poly(x+l,y,z-d,x+l,y-h,z,x+l,y-h,z-d)
-
-        self.add_poly(x,y,z-d,x,y,z,x,y-h,z-d)
-        self.add_poly(x,y,z,x,y-h,z-d,x,y-h,z)
-
-        self.add_poly(x,y-h,z,x+l,y-h,z,x,y-h,z-d)
-        self.add_poly(x+l,y-h,z,x,y-h,z-d,x+l,y-h,z-d)
-
-        self.add_poly(x,y,z-d,x+l,y,z-d,x,y-h,z-d)
-        self.add_poly(x+l,y,z-d,x,y-h,z-d,x+l,y-h,z-d)
     def sphere(self,x,y,z,radius,steps = 20):
         points = self._spherePoints(x,y,z,radius,steps).data
         ps = len(points)
         for semi in range(steps):
-            for p in range(semi * (steps+1), (semi+1) * (steps+1)):
+            for p in range(semi * (steps+1),(semi+1) * (steps+1)):
                 if p == semi * (steps+1):
                     self.add_polyL(points[p],points[p+1],points[(p+steps+1)%ps])
                 elif p ==  (semi+1) * (steps+1) - 1:
@@ -282,30 +293,52 @@ class screen:
                 points.addPoint(hx,hy,hz) 
         return points
     def add_polyL(self,p1,p2,p3):
-        self.add_poly(p1[0],p1[1],p1[2],p2[0],p2[1],p2[2],p3[0],p3[1],p3[2])
-    def add_poly(self, x1,y1,z1,x2,y2,z2,x3,y3,z3):
+        self.add_poly_direct(p1[0],p1[1],p1[2],p2[0],p2[1],p2[2],p3[0],p3[1],p3[2])
+    def add_poly_direct(self,x1,y1,z1,x2,y2,z2,x3,y3,z3):
+        self.poly.addPoint(x1,y1,z1)
+        self.poly.addPoint(x2,y2,z2)
+        self.poly.addPoint(x3,y3,z3)
+    def add_poly(self, x1,y1,z1,x2,y2,z2,x3,y3,z3,axis = "z", pos = True):
         #sort counterclockwise
         self.poly.addPoint(x1,y1,z1)
-        #print("2:",atan2((y2-y1),(x2-x1)),"3:", atan2((y3-y1),(x3-x1)))
-        fact2 = atan2((y2-y1),(x2-x1))
-        fact3 = atan2((y3-y1),(x3-x1))
-
+        if axis == "z":
+            #print("2:",atan2((y2-y1),(x2-x1)),"3:", atan2((y3-y1),(x3-x1)))
+            fact2 = atan2((y2-y1),(x2-x1))
+            fact3 = atan2((y3-y1),(x3-x1))
+            #print("2:",fact2,"3:", fact3)
+        elif axis == "x":
+            fact2 = atan2((z2-z1),(y2-y1))
+            fact3 = atan2((z3-z1),(y3-y1))
+        elif axis == "y":
+            fact2 = atan2((x2-x1),(z2-z1))
+            fact3 = atan2((x3-x1),(z3-z1))
         fact2 = fact2  if fact2 >= 0 else (2*pi - fact2)
         fact3 = fact3  if fact3 >= 0 else (2*pi - fact3)
-        #print("2:",fact2,"3:", fact3)
-        if fact2 < fact3:
+        if fact2 < fact3 and pos:
             self.poly.addPoint(x2,y2,z2)
             self.poly.addPoint(x3,y3,z3)
         else:
             self.poly.addPoint(x3,y3,z3)
             self.poly.addPoint(x2,y2,z2)
     def draw_poly(self):
+        view = vector(0,0,1)
+
         l = 0
         polys = self.poly.data
         while l < len(polys):
-            self.line(polys[l][0],polys[l][1],polys[l+1][0],polys[l+1][1], screen.DRAW[:])
-            self.line(polys[l+2][0],polys[l+2][1],polys[l+1][0],polys[l+1][1], screen.DRAW[:])
-            self.line(polys[l][0],polys[l][1],polys[l+2][0],polys[l+2][1], screen.DRAW[:])
+            A = vector(polys[l+1][0]-polys[l][0],polys[l+1][1]-polys[l][1],polys[l+1][2]-polys[l][2])
+            B = vector(polys[l+2][0]-polys[l][0],polys[l+2][1]-polys[l][1],polys[l+2][2]-polys[l][2])
+            N = A.cross(B)
+
+            if N.dot(view) > 0:
+            # if True:
+                self.line(polys[l][0],polys[l][1],polys[l+1][0],polys[l+1][1], [255,0,0])
+                self.line(polys[l+2][0],polys[l+2][1],polys[l+1][0],polys[l+1][1], screen.DRAW[:])
+                self.line(polys[l][0],polys[l][1],polys[l+2][0],polys[l+2][1], [0,255,0])
+            
+                #self.plot(polys[l][0],polys[l][1],[255,0,0])
+                #self.plot(polys[l+1][0],polys[l+1][1],[0,255,0])
+            
             l+=3
     def toScreen(self):
         self.draw_poly()
@@ -383,6 +416,8 @@ class screen:
     #     remove(ppm_name)
     def __nCr(self, n, r):
         return factorial(n) / (factorial(r) * factorial(n-r))
+    def __dotProduct(self):
+        None
 def display( screen ):
     ppm_name = 'pic.ppm'
     screen.toFileAscii(ppm_name)
