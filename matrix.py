@@ -36,7 +36,7 @@ class matrix:
             m[1][1] = cos(rad)
         elif axis==("y"):
             m[0][0] = cos(rad)
-            m[0][2] = -sin(rad)
+            m[0][2] = -1 * sin(rad)
             m[2][0] = sin(rad)
             m[2][2] = cos(rad)
         elif axis==("z"):
@@ -54,6 +54,17 @@ class matrix:
             #print("ori", ori)
             for i in range(4):
                 f = m.data
+                #print("f",f)
+                new[i] = f[0][i]*ori[0] + f[1][i]*ori[1] + f[2][i]*ori[2] + f[3][i]*ori[3]
+            #print (new)
+            self.data[p] = new
+    def pmult(self, m): #m is [4x4] original = m*orginal
+        for p in range(len(m.data)):
+            new = [0,0,0,0]
+            ori = m.data[p]
+            #print("ori", ori)
+            for i in range(4):
+                f = self.data
                 #print("f",f)
                 new[i] = f[0][i]*ori[0] + f[1][i]*ori[1] + f[2][i]*ori[2] + f[3][i]*ori[3]
             #print (new)
@@ -81,4 +92,17 @@ class matrix:
         e = matrix()
         e.rotate(axis,deg)
         self.mult(e)
+    
+    def pmtrns(self, a = 0, b = 0, c = 0):
+        e = matrix()
+        e.trns(a,b,c)
+        self.pmult(e)
+    def pmscale(self, a = 1, b = 1, c = 1):
+        e = matrix()
+        e.scale(a,b,c)
+        self.pmult(e)
+    def pmrotate(self, axis, deg):
+        e = matrix()
+        e.rotate(axis,deg)
+        self.pmult(e)
         

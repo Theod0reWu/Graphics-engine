@@ -3,6 +3,7 @@ from vector import *
 from subprocess import Popen, PIPE
 from os import remove
 from math import cos, sin, atan2, pi, factorial
+import copy 
 class screen:
     DEFAULT = [0,0,0]
     DRAW = [255,255,255]
@@ -12,6 +13,7 @@ class screen:
         self.width = w
         #master matrices
         self.tfrm = matrix()
+        self.stack = [self.tfrm]
         self.tfrm.ident()
         self.edge = matrix()
 
@@ -214,6 +216,7 @@ class screen:
         self.add_poly_direct(x1,y1,z1,x1,y1,z,x,y1,z)
         self.add_poly_direct(x,y1,z,x,y1,z1,x1,y1,z1)
 
+
     def sphere(self,x,y,z,radius,steps = 20):
         points = self._spherePoints(x,y,z,radius,steps).data
         ps = len(points)
@@ -273,7 +276,7 @@ class screen:
                 hy = r1*sin(the) + y
                 hz = -1 * sin(p) * (r1*cos(the) + r2) + z
                 self.edge.addLine(hx+1,hy+1,hz+1,hx,hy,hz) 
-    def torus(self,x,y,z,r1,r2,steps = 20):
+    def torus(self,x,y,z,r1,r2,steps = 25):
         points =self.__torusPoints(x,y,z,r1,r2,steps).data
         ps = len(points)
         for semi in range(steps):
@@ -332,9 +335,9 @@ class screen:
 
             if N.dot(view) > 0:
             # if True:
-                self.line(polys[l][0],polys[l][1],polys[l+1][0],polys[l+1][1], [255,0,0])
+                self.line(polys[l][0],polys[l][1],polys[l+1][0],polys[l+1][1], screen.DRAW[:])
                 self.line(polys[l+2][0],polys[l+2][1],polys[l+1][0],polys[l+1][1], screen.DRAW[:])
-                self.line(polys[l][0],polys[l][1],polys[l+2][0],polys[l+2][1], [0,255,0])
+                self.line(polys[l][0],polys[l][1],polys[l+2][0],polys[l+2][1], screen.DRAW[:])
             
                 #self.plot(polys[l][0],polys[l][1],[255,0,0])
                 #self.plot(polys[l+1][0],polys[l+1][1],[0,255,0])
@@ -347,13 +350,24 @@ class screen:
             self.line(self.edge.data[l][0],self.edge.data[l][1], self.edge.data[l+1][0], self.edge.data[l+1][1],screen.DRAW[:])
             l+=2
     def updateTfrm(self):
-        self.edge.mult(self.tfrm)
-        self.poly.mult(self.tfrm)
+        self.edge.mult(self.stack[-1])
+        self.poly.mult(self.stack[-1])
+    def push(self):
+        self.stack.append(copy.deepcopy(self.stack[-1]))
+    def pop(self):  
+        self.stack.pop()
     def parse(self, args): #args are seperated my \n
         l = args.lower().split("\n")
         a = 0
+        #print(l)
         while a < len(l):
             #print(l[a])
+            #print(self.stack[-1].data)
+            rel = False
+            if (l[a] in "linecirclebezierhermiteboxspheretorus"):
+                rel = True
+                #print(l[a])
+
             if l[a] == "line":
                 data = [int(i) for i in l[a+1].split(" ")]
                 self.edge.addLine(data[0],data[1],data[2],data[3],data[4],data[5])
@@ -381,14 +395,31 @@ class screen:
                 a-=1
             elif l[a] == "scale":
                 data = [int(i) for i in l[a+1].split(" ")]
-                self.tfrm.mscale(data[0],data[1],data[2])
+                top = self.stack[-1]
+                self.stack[-1] = matrix()
+                self.stack[-1].scale(data[0],data[1],data[2])
+                self.stack[-1].mult(top)
             elif l[a] == "move":
                 data = [int(i) for i in l[a+1].split(" ")]
-                self.tfrm.mtrns(data[0],data[1],data[2])
+                top = self.stack[-1]
+                self.stack[-1] = matrix()
+                self.stack[-1].trns(data[0],data[1],data[2])
+                self.stack[-1].mult(top)
+                #self.stack[-1].mtrns(data[0],data[1],data[2])
             elif l[a] == "rotate":
                 data = l[a+1].split(" ")
                 data[1] = int(data[1])
-                self.tfrm.mrotate(data[0],data[1])
+                top = self.stack[-1]
+                self.stack[-1] = matrix()
+                self.stack[-1].rotate(data[0],data[1])
+                self.stack[-1].mult(top)
+                #self.stack[-1].mrotate(data[0],data[1])
+            elif l[a] == "push":
+                self.push()
+                a-=1
+            elif l[a] == "pop":
+                self.pop()
+                a-=1
             elif l[a] == "apply":
                 self.updateTfrm()
                 a-=1
@@ -405,6 +436,7 @@ class screen:
             else:
                 a-=1
             a+=2
+            self.relative_cs()
     def read(self, file):
         with open(file, "r") as f:
             self.parse(f.read())
@@ -418,6 +450,14 @@ class screen:
         return factorial(n) / (factorial(r) * factorial(n-r))
     def __dotProduct(self):
         None
+    def relative_cs(self):
+        #print ("relative_cs")
+        #print(self.poly.data)
+        self.updateTfrm()
+        #print(self.poly.data)
+        self.toScreen()
+        self.edge.data = []
+        self.poly.data = []
 def display( screen ):
     ppm_name = 'pic.ppm'
     screen.toFileAscii(ppm_name)
