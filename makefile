@@ -1,3 +1,3 @@
 all: graphics.py
-	python main.py
+	python3 main.py
 	

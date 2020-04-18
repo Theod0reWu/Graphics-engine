@@ -58,13 +58,13 @@ class screen:
         for h in range(self.height):
             for w in range(self.width):
                 funct(w,h,self.pixels[w][h])
-    def plot(self,w, h,color):
+    def plot(self,w, h,color = DRAW[:]):
         #print(h,w)
         try:
             self.pixels[int(h)][int(w)] = color[:]
         except IndexError:
             print("ERROR:",h,w)
-    def plotL(self,l,color):
+    def plotL(self,l,color = DEFAULT[:]):
         try:
             self.pixels[int(l[0])][int(l[1])] = color[:]
         except IndexError:
@@ -323,6 +323,13 @@ class screen:
         else:
             self.poly.addPoint(x3,y3,z3)
             self.poly.addPoint(x2,y2,z2)
+    def __scanLine(self, x1,x2,y):
+        s = min(x1,x2)
+        e = max(x1,x2)
+        for i in range(int(s),int(e+1)):
+            self.plot(int(i),int(y))
+        if s == e:
+            self.plot(int(s),int(y))
     def draw_poly(self):
         view = vector(0,0,1)
 
@@ -334,7 +341,37 @@ class screen:
             N = A.cross(B)
 
             if N.dot(view) > 0:
-            # if True:
+            # where the triangle is drawn
+            # endpoits poly[l] through l[+2]
+                points = [polys[i][0:2][::-1] for i in range(l,l+3)]
+                points.sort()
+                points = [points[i][::-1] for i in range(3)]
+                print(points)
+                lines = points[2][1] - points[0][1] + 1
+
+                dx0 = (points[2][0] - points[0][0]) / lines
+                try:
+                    dx1 = (points[1][0] - points[0][0]) / (points[1][1] - points[0][1])
+                except ZeroDivisionError:
+                    dx1 = 0
+                try:
+                    dx2 = (points[2][0] - points[1][0]) / (points[2][1] - points[1][1])
+                except ZeroDivisionError:
+                    dx2 = 0
+
+                xs = points[0][0]
+                if dx1 == 0:
+                    xe = points[0][0]
+                else:
+                    xe = points[1][0]
+                for y in range(int(points[0][1]),int(points[2][1]+1)):
+                    print(xs,xe)
+                    self.__scanLine(xs,xe,y)
+                    xs += dx0
+                    if y < points[1][1]:
+                        xe += dx1
+                    else:
+                        xe += dx2
                 self.line(polys[l][0],polys[l][1],polys[l+1][0],polys[l+1][1], screen.DRAW[:])
                 self.line(polys[l+2][0],polys[l+2][1],polys[l+1][0],polys[l+1][1], screen.DRAW[:])
                 self.line(polys[l][0],polys[l][1],polys[l+2][0],polys[l+2][1], screen.DRAW[:])
