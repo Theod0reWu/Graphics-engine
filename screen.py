@@ -4,11 +4,13 @@ from subprocess import Popen, PIPE
 from os import remove
 from math import cos, sin, atan2, pi, factorial
 import copy 
+import random
 class screen:
     DEFAULT = [0,0,0]
     DRAW = [255,255,255]
     def __init__(self, h, w):
         self.pixels = [[screen.DEFAULT[:] for i in range(w)] for i in range(h)]
+        self.zbuff = [[float("-inf") for i in range(w)] for i in range(h)]
         self.height = h
         self.width = w
         #master matrices
@@ -58,10 +60,12 @@ class screen:
         for h in range(self.height):
             for w in range(self.width):
                 funct(w,h,self.pixels[w][h])
-    def plot(self,w, h,color = DRAW[:]):
+    def plot(self,w,h,z=0,color = DRAW[:]):
         #print(h,w)
         try:
-            self.pixels[int(h)][int(w)] = color[:]
+            if (z > self.zbuff[int(h)][int(w)]):
+                self.pixels[int(h)][int(w)] = color[:]
+                self.zbuff[int(h)][int(w)] = z
         except IndexError:
             print("ERROR:",h,w)
     def plotL(self,l,color = DEFAULT[:]):
@@ -323,13 +327,19 @@ class screen:
         else:
             self.poly.addPoint(x3,y3,z3)
             self.poly.addPoint(x2,y2,z2)
-    def __scanLine(self, x1,x2,y):
-        s = min(x1,x2)
-        e = max(x1,x2)
+    def __scanLine(self, x1,z1,x2,z2,y, color = DRAW[:]):
+        ps = [[x1,z1],[x2,z2]]
+        ps.sort()
+        s = ps[0][0]
+        e = ps[1][0]
+        #print (s,e)
+        #print(ps[1][1],ps[0][1])
+        dz = (ps[1][1] - ps[0][1]) / (e-s+1)
         for i in range(int(s),int(e+1)):
-            self.plot(int(i),int(y))
+            self.plot(int(i),int(y),ps[0][1],color)
+            ps[0][1] += dz
         if s == e:
-            self.plot(int(s),int(y))
+            self.plot(int(s),int(y),z1,color)
     def draw_poly(self):
         view = vector(0,0,1)
 
@@ -340,14 +350,21 @@ class screen:
             B = vector(polys[l+2][0]-polys[l][0],polys[l+2][1]-polys[l][1],polys[l+2][2]-polys[l][2])
             N = A.cross(B)
 
-            if N.dot(view) > 0:
+            if N.dot(view) > 0 and polys[l] != polys[l+1] and polys[l+1] != polys[l+2] and polys[l] != polys[l+2]:
             # where the triangle is drawn
             # endpoits poly[l] through l[+2]
-                points = [polys[i][0:2][::-1] for i in range(l,l+3)]
+                points = [polys[i] for i in range(l,l+3)]
+                for p in points:
+                    p[0] = int(p[0])
+                    p[1] = int(p[1])
+                for p in points:
+                    p[0],p[1] = p[1],p[0]
                 points.sort()
-                points = [points[i][::-1] for i in range(3)]
-                print(points)
-                lines = points[2][1] - points[0][1] + 1
+                for p in points:
+                    p[0],p[1] = p[1],p[0]
+                #points = [points[i][::-1] for i in range(3)]
+                #print(points)
+                lines = points[2][1] - points[0][1]
 
                 dx0 = (points[2][0] - points[0][0]) / lines
                 try:
@@ -359,22 +376,44 @@ class screen:
                 except ZeroDivisionError:
                     dx2 = 0
 
+                dz0 = (points[2][2] - points[0][2]) / lines
+                try:
+                    dz1 = (points[1][2] - points[0][2]) / (points[1][1] - points[0][1])
+                except ZeroDivisionError:
+                    dz1 = 0
+                try:
+                    dz2 = (points[2][2] - points[1][2]) / (points[2][1] - points[1][1])
+                except ZeroDivisionError:
+                    dz2 = 0
                 xs = points[0][0]
-                if dx1 == 0:
-                    xe = points[0][0]
-                else:
+                xe = points[0][0]
+
+                zs = points[0][2]
+                ze = points[0][2]
+                if points[1][1] == points[0][1]:
                     xe = points[1][0]
+                    ze = points[1][2]
+                #print (points)
+                c = [random.randint(0,255) for i in range(3)]
+                #print(c)
                 for y in range(int(points[0][1]),int(points[2][1]+1)):
-                    print(xs,xe)
-                    self.__scanLine(xs,xe,y)
+                    #print(xs,xe)
+                    self.__scanLine(xs,zs,xe,ze,y,c)
                     xs += dx0
+                    zs += dz0
+                    # xe += dx1
+                    # if y == points[1][1]:
+                    #     dx1 = dx2
+                    #     xe = points[1][0]
                     if y < points[1][1]:
                         xe += dx1
+                        ze += dz1
                     else:
                         xe += dx2
-                self.line(polys[l][0],polys[l][1],polys[l+1][0],polys[l+1][1], screen.DRAW[:])
-                self.line(polys[l+2][0],polys[l+2][1],polys[l+1][0],polys[l+1][1], screen.DRAW[:])
-                self.line(polys[l][0],polys[l][1],polys[l+2][0],polys[l+2][1], screen.DRAW[:])
+                        ze += dz2
+                # self.line(polys[l][0],polys[l][1],polys[l+1][0],polys[l+1][1], screen.DRAW[:])
+                # self.line(polys[l+2][0],polys[l+2][1],polys[l+1][0],polys[l+1][1], screen.DRAW[:])
+                # self.line(polys[l][0],polys[l][1],polys[l+2][0],polys[l+2][1], screen.DRAW[:])
             
                 #self.plot(polys[l][0],polys[l][1],[255,0,0])
                 #self.plot(polys[l+1][0],polys[l+1][1],[0,255,0])
