@@ -1,16 +1,11 @@
-from screen import *
-pic = screen(500,500)
+from script import run
+import sys
 
-# rotate
-# y -30
-# rotate
-# x 10
-
-# # #save_extension(pic, "try.png")
-#pic.toFileAscii("pic.ppm")
-# #display(pic)
-
-pic.read("instructions")
-print("pic.ppm")
+if len(sys.argv) == 2:
+    run(sys.argv[1])
+elif len(sys.argv) == 1:
+    run(raw_input("please enter the filename of an mdl script file: \n"))
+else:
+    print("Too many arguments.")
 
 

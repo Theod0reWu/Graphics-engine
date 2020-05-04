@@ -1,66 +1,113 @@
-#BODY
+#stuff
 push
 move
-250 250 0
+50 250 0
 rotate
-y -30
-box
--100 125 50 200 250 100
-#HEAD
-push
-move
-0 175 0
+x 10
 rotate
-y 90
-sphere
-0 0 0 50
-pop
-#LEFT ARM
+y -60
+#color
+#255 0 0
+shade
+255 0 0
+box
+0 0 0 200 200 200
+#color
+#201 17 17
+shade
+201 17 17
+box
+0 0 10 200 10 10
+box
+95 0 10 10 60 10
+box
+0 -60 10 200 10 10
+box
+0 0 10 10 60 10
+box
+190 0 10 10 60 10
+
+#color
+#20 32 138
+shade
+20 32 138
+box
+10 -10 5 85 60 5
+box
+115 -10 5 75 60 5
+
+#color
+#229 240 65
+shade
+299 240 65
+box
+0 -120 10 30 15 10
+box
+170 -120 10 30 15 10
+
+#color
+#131 133 145
+shade
+131 133 145
+#fender
+box
+0 -160 20 200 40 20
+
+#line thingys
+box
+65 -80 10 70 10 10
+box
+65 -100 10 70 10 10
+box
+65 -120 10 70 10 10
+box
+65 -140 10 70 10 10
+
+#middle bars
+box
+65 -80 10 10 100 10
+box
+125 -80 10 10 100 10
+
+#head things
+box
+30 100 -200 10 200 10
+box
+160 100 -200 10 200 10
+
+#mirror
+box
+220 -30 -20 30 50 10
+box
+200 -30 -19 30 10 10
+box
+200 -70 -19 30 10 10
+
+#side thingys
+???
+
+#tire
+#color
+#57 57 57
+shade
+10 10 10
 push
-move
--100 125 0
 rotate
-x -45
-box
--40 0 40 40 100 80
-#LEFT LOWER ARM
-push
-move
--20 -100 0
-box
--10 0 10 20 125 20
-pop
-pop
-#RIGHT ARM
-push
-move
-100 125 0
+x 80
 rotate
-x -45
-box
-0 0 40 40 100 80
-#RIGHT LOWER ARM
-push
-move
-20 -100 0
-rotate
-x -20
-box
--10 0 10 20 125 20
+y 10
+torus
+220 -100 200 30 20
+
 pop
-pop
-#LEFT LEG
-push
-move
--100 -125 0
+
+#flatbed
+#color
+#39 57 213
+shade
+39 57 213
 box
-0 0 40 50 120 80
-pop
-#RIGHT LEG
-push
-move
-100 -125 0
-box
--50 0 40 50 120 80
+0 -160 -200 200 40 280
+
 save
 pic.ppm
