@@ -2,13 +2,29 @@ from matrix import *
 from vector import *
 from subprocess import Popen, PIPE
 from os import remove
-from math import cos, sin, atan2, pi, factorial
+from math import cos, sin, atan2, pi, factorial, pow
 import copy 
 import random
 class screen:
     DEFAULT = [0,0,0]
     DRAW = [255,255,255]
-    def __init__(self, h, w):
+    AMBIENT = [.5,.5,.5]
+    DIFFUSE = [.5,.5,.5]
+    SPECULAR = [.4,.4,.4]
+    AMBCOLOR = [50,50,50]
+    SCOLOR = [255,255,255]
+    LSOURCE = [499,490,20]
+    VIEW = vector(0,0,1)
+    SPEC = 3
+    def updateColor(self,symbols,reflect):
+        colors = ['red','green','blue']
+        r = symbols[reflect][1]
+        for c in range(3):
+            screen.AMBIENT[c]=r[colors[c]][0]
+            screen.DIFFUSE[c]=r[colors[c]][1]
+            screen.SPECULAR[c]=r[colors[c]][2]
+        #print ("set",screen.AMBIENT,screen.DIFFUSE,screen.SPECULAR)
+    def __init__(self, h=500, w=500):
         self.pixels = [[screen.DEFAULT[:] for i in range(w)] for i in range(h)]
         self.zbuff = [[float("-inf") for i in range(w)] for i in range(h)]
         self.height = h
@@ -31,7 +47,7 @@ class screen:
         enter = "P6\n{} {}\n255\n".format(self.height, self.width)
         with open(file, "wb") as f:
             f.write(enter.encode())
-            for h in range(self.height):
+            for h in range(self.height)[::-1]:
                 for w in range(self.width):
                     c = self.pixels[h][w]
                     f.write(bytes(c))
@@ -60,8 +76,10 @@ class screen:
         for h in range(self.height):
             for w in range(self.width):
                 funct(w,h,self.pixels[w][h])
-    def plot(self,w,h,z=0,color = DRAW[:]):
+    def plot(self,w,h,z=0,color = None):
         #print(h,w)
+        if color == None:
+            color = screen.DRAW[:]
         try:
             if (z > self.zbuff[int(h)][int(w)]):
                 self.pixels[int(h)][int(w)] = color[:]
@@ -221,7 +239,7 @@ class screen:
         self.add_poly_direct(x,y1,z,x,y1,z1,x1,y1,z1)
 
 
-    def sphere(self,x,y,z,radius,steps = 20):
+    def sphere(self,x,y,z,radius,steps = 30):
         points = self._spherePoints(x,y,z,radius,steps).data
         ps = len(points)
         for semi in range(steps):
@@ -280,13 +298,15 @@ class screen:
                 hy = r1*sin(the) + y
                 hz = -1 * sin(p) * (r1*cos(the) + r2) + z
                 self.edge.addLine(hx+1,hy+1,hz+1,hx,hy,hz) 
-    def torus(self,x,y,z,r1,r2,steps = 25):
+    def torus(self,x,y,z,r1,r2,steps = 28):
         points =self.__torusPoints(x,y,z,r1,r2,steps).data
         ps = len(points)
         for semi in range(steps):
             for p in range(semi * (steps+1), (semi+1) * (steps+1)):
-                self.add_polyL(points[p],points[p+1],points[(p+steps+1)%ps])
-                self.add_polyL(points[p],points[(p+steps+1)%ps],points[(p+steps)%ps])
+                #self.add_polyL(points[p],points[p+1],points[(p+steps+1)%ps])
+                #self.add_polyL(points[p],points[(p+steps+1)%ps],points[(p+steps)%ps])
+                self.add_polyL(points[p+1],points[p],points[(p+steps+1)%ps])
+                self.add_polyL(points[(p+steps+1)%ps],points[p],points[(p+steps)%ps])
     def __torusPoints(self,x,y,z,r1,r2,steps):
         points = matrix()
         step = 1/steps
@@ -327,7 +347,7 @@ class screen:
         else:
             self.poly.addPoint(x3,y3,z3)
             self.poly.addPoint(x2,y2,z2)
-    def __scanLine(self, x1,z1,x2,z2,y, color = DRAW[:]):
+    def __scanLine(self, x1,z1,x2,z2,y, color = None):
         ps = [[x1,z1],[x2,z2]]
         ps.sort()
         s = ps[0][0]
@@ -341,7 +361,7 @@ class screen:
         if s == e:
             self.plot(int(s),int(y),z1,color)
     def draw_poly(self):
-        view = vector(0,0,1)
+        view = screen.VIEW
 
         l = 0
         polys = self.poly.data
@@ -364,7 +384,7 @@ class screen:
                     p[0],p[1] = p[1],p[0]
                 #points = [points[i][::-1] for i in range(3)]
                 #print(points)
-                lines = points[2][1] - points[0][1]
+                lines = points[2][1] - points[0][1] + 1
 
                 dx0 = (points[2][0] - points[0][0]) / lines
                 try:
@@ -394,11 +414,62 @@ class screen:
                     xe = points[1][0]
                     ze = points[1][2]
                 #print (points)
-                c = [random.randint(0,255) for i in range(3)]
+                # = [random.randint(0,255) for i in range(3)]
                 #print(c)
+
+                #COLOR!!!!!!!!
+                lambient = [screen.AMBCOLOR[i] * screen.AMBIENT[i] for i in range(3)]
+                
+
+                N.normalize()
+                L = [(polys[l][i] + polys[l+1][i] + polys[l+2][i]) / 3 for i in range(3)]
+                L = [screen.LSOURCE[i] - L[i] for i in range(3)]
+                L = vector(L[0],L[1],L[2])
+                L.normalize()
+                cosine = N.dot(L)
+                if cosine > pi/2 or cosine < -pi/2:
+                    cosine = 0
+
+                ldiffuse = [screen.SCOLOR[i] * screen.DIFFUSE[i] * cosine for i in range(3)]
+                #ldiffuse = [0,0,0]
+                for i in range(3):
+                    if ldiffuse[i] < 0:
+                        ldiffuse[i] = 0
+                    elif ldiffuse[i] > 255:
+                        ldiffuse[i] = 255
+
+                #T = [N[i] * nl for i in range(3)]
+                #T = vector(T[0],T[1],T[2])
+                #S = [N[i] * nl - L[i] for i in range(3)]
+                # r = t + s
+                ndata = [N.x,N.y,N.z]
+                ldata = [L.x,L.y,L.z]
+                R = [2*ndata[i] * cosine - ldata[i] for i in range(3)]
+                R = vector(R[0],R[1],R[2])
+                rv = pow(R.dot(screen.VIEW), screen.SPEC)
+                lspecular = [screen.SCOLOR[i] * screen.SPECULAR[i] * rv for i in range(3)]
+                #print(rv)
+                for i in range(3):
+                    if lspecular[i] < 0:
+                        lspecular[i] = 0
+                    elif lspecular[i] > 255:
+                        lspecular[i] = 255
+                
+                light = [int(lambient[i] + ldiffuse[i] + lspecular[i]) for i in range(3)]
+                #screen.DRAW = light[:]
+                #print("0:",lambient[0],ldiffuse[0],lspecular[0])
+                #print("1:",lambient[1],ldiffuse[1],lspecular[1])
+                #print("2:",lambient[2],ldiffuse[2],lspecular[2])
+                #print ("in",screen.AMBIENT,screen.DIFFUSE,screen.SPECULAR)
+                for i in range(3):
+                    if light[i] < 0:
+                        light[i] = 0
+                    elif light[i] > 255:
+                        light[i] = 255
+
                 for y in range(int(points[0][1]),int(points[2][1]+1)):
                     #print(xs,xe)
-                    self.__scanLine(xs,zs,xe,ze,y,c)
+                    self.__scanLine(xs,zs,xe,ze,y,light)
                     xs += dx0
                     zs += dz0
                     # xe += dx1
@@ -470,7 +541,11 @@ class screen:
                 self.tfrm.ident()
                 a-=1
             elif l[a] == "scale":
-                data = [int(i) for i in l[a+1].split(" ")]
+                data = [i for i in l[a+1].split(" ")]
+                data[0] = int(data[0])
+                data[1] = int(data[1])
+                data[2] = float(data[2])
+
                 top = self.stack[-1]
                 self.stack[-1] = matrix()
                 self.stack[-1].scale(data[0],data[1],data[2])
@@ -509,6 +584,14 @@ class screen:
             elif l[a] == "clear":
                 self.edge = matrix()
                 a-=1
+            elif l[a] == "color":
+                data = [int(i) for i in l[a+1].split(" ")]
+                screen.DRAW = data
+                #print (screen.DRAW)
+            elif l[a] == "shade":
+                data = [int(i) for i in l[a+1].split(" ")]
+                screen.AMBIENT = [i / 255 for i in data]
+                screen.DIFFUSE = [i / 255 for i in data]
             else:
                 a-=1
             a+=2
@@ -534,10 +617,40 @@ class screen:
         self.toScreen()
         self.edge.data = []
         self.poly.data = []
+    def display(self):
+        screen = self.pixels
+        ppm_name = 'pic.ppm'
+        self.toFile(ppm_name)
+        p = Popen( ['display', ppm_name], stdin=PIPE, stdout = PIPE )
+        p.communicate()
+        remove(ppm_name)
+    def save_extension(self, fname ):
+        screen = self.pixels
+        ppm_name = fname[:fname.find('.')] + '.ppm'
+        self.toFile(ppm_name)
+        p = Popen( ['convert', ppm_name, fname ], stdin=PIPE, stdout = PIPE )
+        p.communicate()
+        remove(ppm_name)
+
 def display( screen ):
     ppm_name = 'pic.ppm'
-    screen.toFileAscii(ppm_name)
+    save_ppm( screen, ppm_name )
     p = Popen( ['display', ppm_name], stdin=PIPE, stdout = PIPE )
     p.communicate()
     remove(ppm_name)
-
+def save_extension( screen, fname ):
+    ppm_name = fname[:fname.find('.')] + '.ppm'
+    save_ppm( screen, ppm_name )
+    p = Popen( ['convert', ppm_name, fname ], stdin=PIPE, stdout = PIPE )
+    p.communicate()
+    remove(ppm_name)
+def save_ppm( screen, fname ):
+    f = open( fname, 'wb' )
+    ppm = 'P6\n' + str(len(screen[0])) +' '+ str(len(screen)) +' '+ str(255) +'\n'
+    f.write(ppm.encode())
+    for y in range( len(screen) )[::-1]:
+        for x in range( len(screen[y]) ):
+            pixel = screen[y][x]
+            #print(pixel)
+            f.write( bytes(pixel) )
+    f.close()

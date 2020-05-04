@@ -6,15 +6,11 @@ rotate
 x 10
 rotate
 y -60
-#color
-#255 0 0
-shade
+color
 255 0 0
 box
 0 0 0 200 200 200
-#color
-#201 17 17
-shade
+color
 201 17 17
 box
 0 0 10 200 10 10
@@ -27,27 +23,21 @@ box
 box
 190 0 10 10 60 10
 
-#color
-#20 32 138
-shade
+color
 20 32 138
 box
 10 -10 5 85 60 5
 box
 115 -10 5 75 60 5
 
-#color
-#229 240 65
-shade
-299 240 65
+color
+229 240 65
 box
 0 -120 10 30 15 10
 box
 170 -120 10 30 15 10
 
-#color
-#131 133 145
-shade
+color
 131 133 145
 #fender
 box
@@ -87,10 +77,8 @@ box
 ???
 
 #tire
-#color
-#57 57 57
-shade
-10 10 10
+color
+57 57 57
 push
 rotate
 x 80
@@ -102,9 +90,7 @@ torus
 pop
 
 #flatbed
-#color
-#39 57 213
-shade
+color
 39 57 213
 box
 0 -160 -200 200 40 280
