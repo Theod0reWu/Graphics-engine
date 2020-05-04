@@ -1,0 +1,99 @@
+#stuff
+push
+move
+50 250 0
+rotate
+x 10
+rotate
+y -60
+color
+255 0 0
+box
+0 0 0 200 200 200
+color
+201 17 17
+box
+0 0 10 200 10 10
+box
+95 0 10 10 60 10
+box
+0 -60 10 200 10 10
+box
+0 0 10 10 60 10
+box
+190 0 10 10 60 10
+
+color
+20 32 138
+box
+10 -10 5 85 60 5
+box
+115 -10 5 75 60 5
+
+color
+229 240 65
+box
+0 -120 10 30 15 10
+box
+170 -120 10 30 15 10
+
+color
+131 133 145
+#fender
+box
+0 -160 20 200 40 20
+
+#line thingys
+box
+65 -80 10 70 10 10
+box
+65 -100 10 70 10 10
+box
+65 -120 10 70 10 10
+box
+65 -140 10 70 10 10
+
+#middle bars
+box
+65 -80 10 10 100 10
+box
+125 -80 10 10 100 10
+
+#head things
+box
+30 100 -200 10 200 10
+box
+160 100 -200 10 200 10
+
+#mirror
+box
+220 -30 -20 30 50 10
+box
+200 -30 -19 30 10 10
+box
+200 -70 -19 30 10 10
+
+#side thingys
+???
+
+#tire
+color
+57 57 57
+push
+rotate
+x 80
+rotate
+y 10
+torus
+220 -100 200 30 20
+
+pop
+
+#flatbed
+color
+39 57 213
+box
+0 -160 -200 200 40 280
+
+save
+pic.ppm
