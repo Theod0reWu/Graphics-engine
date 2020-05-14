@@ -6,8 +6,8 @@ from math import cos, sin, atan2, pi, factorial, pow
 import copy 
 import random
 class screen:
-    DEFAULT = [0,0,0]
-    DRAW = [255,255,255]
+    DEFAULT = [255,255,255]
+    DRAW = [0,0,0]
     AMBIENT = [.5,.5,.5]
     DIFFUSE = [.5,.5,.5]
     SPECULAR = [.4,.4,.4]
@@ -81,14 +81,19 @@ class screen:
         if color == None:
             color = screen.DRAW[:]
         try:
-            if (z > self.zbuff[int(h)][int(w)]):
+            if (z > self.zbuff[int(h)][int(w)]) and int(w) > 0 and int(h) > 0:
+                #print (w,h)
                 self.pixels[int(h)][int(w)] = color[:]
                 self.zbuff[int(h)][int(w)] = z
+                #if w < 0 or h < 0: 
+                #    print ("uh oh")
         except IndexError:
-            print("ERROR:",h,w)
+            #print("ERROR:",h,w)
+            None
     def plotL(self,l,color = DEFAULT[:]):
         try:
-            self.pixels[int(l[0])][int(l[1])] = color[:]
+            if (int(l[0]) > 0 and l[1] > 0):
+                self.pixels[int(l[0])][int(l[1])] = color[:]
         except IndexError:
             print("ERROR:",h,w)
     def _Q1(self,x1,y1,x2,y2,color):
@@ -355,6 +360,8 @@ class screen:
         #print (s,e)
         #print(ps[1][1],ps[0][1])
         dz = (ps[1][1] - ps[0][1]) / (e-s+1)
+        #if s < 0:
+        #    s = 0
         for i in range(int(s),int(e+1)):
             self.plot(int(i),int(y),ps[0][1],color)
             ps[0][1] += dz
