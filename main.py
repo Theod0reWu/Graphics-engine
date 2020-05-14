@@ -8,4 +8,5 @@ elif len(sys.argv) == 1:
 else:
     print("Too many arguments.")
 
+print ("simple.gif made")
 
